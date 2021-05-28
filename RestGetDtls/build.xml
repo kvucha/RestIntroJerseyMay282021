@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<project name="RestGetDtls" default="tomcat-deploy" basedir=".">
+
+  <property name="build"   value="build" />
+  <property name="WebContent"   value="WebContent" />
+  <property name="conf" value="conf"/>
+  <property name="resources" value="resources"/>
+  <property environment="env"/>
+
+  <tstamp>
+    <format property="builddate" pattern="MMddyyyyhhmm" locale="en,US"/>
+  </tstamp>
+
+  <target name="loadprops">
+	<property file="build.properties" />
+	<path id="class.path">
+		<fileset dir="${catalina.lib}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${WebContent}/WEB-INF/lib">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+  </target>
+
+  <!-- make directory structure-->
+  <target name="mkBuildDir">  	
+	<mkdir dir="${build}/classes" />
+	<mkdir dir="${build}/lib" />
+  </target>
+  
+  <target name="clean" description="Destroys all generated files and dirs.">
+	<delete dir="${tomcat.web.path}" />
+	<delete dir="${build}/classes" />
+	<delete dir="${build}/lib" />  	
+  </target>
+	
+  <!--Compile-->
+  <target name="compile" depends="loadprops,clean,mkBuildDir">  	
+  	
+    <echo message="Compile DAO-VO Src..." /> 
+    <javac classpathref="class.path" srcdir="src" destdir="${build}/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" includeantruntime="false">
+    	<compilerarg value="-Xlint:unchecked"/>
+    	<include name="**/**/*.java" />
+    	<include name="**/**/**/*.java" />   	
+    </javac>
+  	<!--
+	  <echo message="Package BAA Web..." />
+	  <jar destfile="${build}/lib/baa-sweb.jar">
+			<fileset dir="${build}/classes">
+		    	<include name="**/**/*.class" />
+		    	<include name="**/**/**/*.class" />				
+			</fileset>  	  
+	  </jar>
+	  -->
+  </target>
+  
+  
+  <!-- deploy -->
+  <target name="tomcat-deploy" depends="compile">
+  	  <echo message="Deploying into tomcat base...." />
+  	
+  	  <copy todir="${tomcat.web.path}" overwrite="true">
+  	  	<fileset dir="${WebContent}" includes="**/*.*">
+  	  	   <different targetdir="${tomcat.web.path}" ignoreFileTimes="false" ignoreContents="true"/>
+  	  	</fileset>
+  	  </copy>
+  	  <copy todir="${tomcat.web.path}/WEB-INF/lib" overwrite="true">
+  		<fileset dir="${build}/lib" includes="*.jar">
+  		   <different targetdir="${tomcat.web.path}/WEB-INF/lib" ignoreFileTimes="false" ignoreContents="true"/>
+  		</fileset>
+  	  </copy>
+      <copy todir="${tomcat.web.path}/WEB-INF/classes">
+        <fileset dir="${build}/classes"/>
+      </copy>
+  	
+  	<!--   krishna new changes  start  -->
+  	
+	  <copy file="${conf}/log4j.properties" overwrite="true" tofile="${tomcat.web.path}/WEB-INF/classes/log4j.properties" />
+	  <replace file="${tomcat.web.path}/WEB-INF/classes/log4j.properties" token="@@@" value="TRACE"/>
+	  <replace file="${tomcat.web.path}/WEB-INF/classes/log4j.properties" value="UNKNOWN" propertyFile="build.properties">
+	      <replacefilter token="@logpath@" property="logpath" />
+	  	  <replacefilter token="@webapp@" property="web.app" />
+	  </replace>
+  	
+  	
+  	
+  	<!--   krishna new changes  end  -->
+      <copy file="surround.properties" overwrite="true" tofile="${tomcat.web.path}/WEB-INF/classes/surround.properties" />
+
+  	  <copy file="${conf}/context.xml" overwrite="true" tofile="${tomcat.conf}/${web.app}.xml" />
+  	  <replace file="${tomcat.conf}/${web.app}.xml" value="UNKNOWN" propertyFile="build.properties">
+	      <replacefilter token="@ORACLE_CONN_URL@" property="orcl.conn.url" />
+	      <replacefilter token="@ORCL_USRNM@" property="orcl.usrnm" />
+	      <replacefilter token="@ORCL_PSSWD@" property="orcl.psswd" />
+  	  </replace>
+
+  </target>
+  
+</project>

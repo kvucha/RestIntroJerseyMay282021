@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!--
+    Context configuration file for the Web Application
+-->
+<Context 
+    debug="9"
+    reloadable="true"
+	allowLinking="false"
+	crossContext="false">
+	
+
+          
+    <Resource name="jdbc/AmisysOracle" auth="Container"
+        type="oracle.jdbc.pool.OracleDataSource" 
+        factory="oracle.jdbc.pool.OracleDataSourceFactory" 
+        url="@ORACLE_CONN_URL@"
+        driverClassName="oracle.jdbc.OracleDriver"
+        connectionCacheName="IBMIGHA"
+        connectionCachingEnabled="true"
+        connectionCacheProperties="{MinLimit=0, MaxLimit=50, MaxStatementsLimit=0, InitialLimit=0, AbandonedConnectionTimeout=25}"
+        user="@ORCL_USRNM@" password="@ORCL_PSSWD@"/>
+		
+    <Manager pathname="" />
+    
+
+
+</Context>
